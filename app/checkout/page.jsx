@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Tag, X } from "lucide-react";
 import Header from "../../components/Header";
@@ -12,6 +12,11 @@ import { calculateShipping } from "../../lib/shipping";
 import { sendOrderConfirmationEmail } from "../../lib/sendOrderEmail";
 import { createMercadoPagoCheckout } from "../../lib/mercadoPago";
 
+const UFS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
+  "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+];
+
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const { customer } = useAuth();
@@ -21,7 +26,15 @@ export default function CheckoutPage() {
   const [fullName, setFullName] = useState(customer?.name || "");
   const [phone, setPhone] = useState(customer?.phone || "");
   const [email, setEmail] = useState(customer?.email || "");
-  const [address, setAddress] = useState(customer?.address || "");
+
+  const [street, setStreet] = useState(customer?.street || "");
+  const [streetNumber, setStreetNumber] = useState(customer?.street_number || "");
+  const [complement, setComplement] = useState(customer?.complement || "");
+  const [neighborhood, setNeighborhood] = useState(customer?.neighborhood || "");
+  const [city, setCity] = useState(customer?.city || "");
+  const [state, setState] = useState(customer?.state || "");
+  const [zipCode, setZipCode] = useState(customer?.zip_code || "");
+
   const [referencePoint, setReferencePoint] = useState(customer?.reference_point || "");
   const [observation, setObservation] = useState("");
 
@@ -30,6 +43,11 @@ export default function CheckoutPage() {
   const [couponError, setCouponError] = useState("");
   const [checkingCoupon, setCheckingCoupon] = useState(false);
 
+  // "Como vai pagar?" — só aparece quando o método é "Pagar na Entrega" (cod)
+  const [deliveryPaymentEnabled, setDeliveryPaymentEnabled] = useState(false);
+  const [deliveryPaymentOptions, setDeliveryPaymentOptions] = useState([]);
+  const [deliveryPaymentOption, setDeliveryPaymentOption] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -37,6 +55,20 @@ export default function CheckoutPage() {
   const shippingCost = shipping.cost ?? 0;
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
   const total = Math.max(subtotal + shippingCost - discountAmount, 0);
+
+  useEffect(() => {
+    async function loadDeliveryPaymentSettings() {
+      const [moduleResult, optionsResult] = await Promise.all([
+        supabase.from("module_settings").select("enabled").eq("id", "forma_pagamento_entrega").single(),
+        supabase.from("delivery_payment_options").select("*").eq("enabled", true).order("sort_order"),
+      ]);
+      setDeliveryPaymentEnabled(moduleResult.data?.enabled ?? false);
+      setDeliveryPaymentOptions(optionsResult.data || []);
+    }
+    loadDeliveryPaymentSettings();
+  }, []);
+
+  const mostrarComoVaiPagar = paymentMethod === "cod" && deliveryPaymentEnabled && deliveryPaymentOptions.length > 0;
 
   async function handleApplyCoupon() {
     if (!couponInput.trim()) return;
@@ -67,8 +99,12 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (items.length === 0) return;
 
-    if (!fullName.trim() || !phone.trim() || !address.trim()) {
-      setFormError("Preencha ao menos nome completo, telefone e endereço.");
+    if (!fullName.trim() || !phone.trim() || !street.trim() || !streetNumber.trim() || !neighborhood.trim() || !city.trim() || !state.trim() || !zipCode.trim()) {
+      setFormError("Preencha ao menos nome completo, telefone e todos os campos de endereço (exceto complemento).");
+      return;
+    }
+    if (mostrarComoVaiPagar && !deliveryPaymentOption) {
+      setFormError("Escolha como você vai pagar o entregador.");
       return;
     }
     setFormError("");
@@ -80,7 +116,13 @@ export default function CheckoutPage() {
         name: fullName.trim(),
         phone: phone.trim(),
         email: email.trim() || null,
-        address: address.trim(),
+        street: street.trim(),
+        street_number: streetNumber.trim(),
+        complement: complement.trim() || null,
+        neighborhood: neighborhood.trim(),
+        city: city.trim(),
+        state: state,
+        zip_code: zipCode.trim(),
         reference_point: referencePoint.trim() || null,
         stage: "cliente",
       };
@@ -101,12 +143,21 @@ export default function CheckoutPage() {
         }
       }
 
+      const enderecoCompleto = [
+        `${street.trim()}, ${streetNumber.trim()}`,
+        complement.trim(),
+        neighborhood.trim(),
+        `${city.trim()} - ${state}`,
+        zipCode.trim(),
+      ].filter(Boolean).join(", ");
+
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
           customer_id: customerId,
           status: "pendente",
           payment_method: paymentMethod,
+          delivery_payment_option: mostrarComoVaiPagar ? deliveryPaymentOption : null,
           shipping_cost: shippingCost,
           subtotal,
           total,
@@ -140,7 +191,7 @@ export default function CheckoutPage() {
         try {
           await sendOrderConfirmationEmail({
             toEmail: email.trim(), customerName: fullName.trim(), orderNumber: order.order_number,
-            items, subtotal, shippingCost, discountAmount, total, paymentMethod, address: address.trim(),
+            items, subtotal, shippingCost, discountAmount, total, paymentMethod, address: enderecoCompleto,
           });
         } catch (err) {
           console.warn("E-mail não enviado:", err);
@@ -183,7 +234,26 @@ export default function CheckoutPage() {
             <input required placeholder="Nome completo *" value={fullName} onChange={(e) => setFullName(e.target.value)} className="input" />
             <input required placeholder="Telefone / WhatsApp *" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!!customer} className="input disabled:bg-ink/5" />
             <input placeholder="E-mail (para receber a confirmação)" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input" />
-            <input required placeholder="Endereço completo *" value={address} onChange={(e) => setAddress(e.target.value)} className="input" />
+          </div>
+        </section>
+
+        <section className="mt-6">
+          <h2 className="font-display text-base font-bold text-ink">Endereço de entrega</h2>
+          <div className="mt-3 flex flex-col gap-2.5">
+            <div className="flex gap-2.5">
+              <input required placeholder="Rua / Avenida *" value={street} onChange={(e) => setStreet(e.target.value)} className="input flex-[3]" />
+              <input required placeholder="Número *" value={streetNumber} onChange={(e) => setStreetNumber(e.target.value)} className="input flex-1" />
+            </div>
+            <input placeholder="Complemento (apto, bloco...)" value={complement} onChange={(e) => setComplement(e.target.value)} className="input" />
+            <input required placeholder="Bairro *" value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} className="input" />
+            <div className="flex gap-2.5">
+              <input required placeholder="Cidade *" value={city} onChange={(e) => setCity(e.target.value)} className="input flex-[2]" />
+              <select required value={state} onChange={(e) => setState(e.target.value)} className="input flex-1">
+                <option value="">UF *</option>
+                {UFS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
+              </select>
+              <input required placeholder="CEP *" value={zipCode} onChange={(e) => setZipCode(e.target.value)} className="input flex-1" />
+            </div>
             <input placeholder="Ponto de referência" value={referencePoint} onChange={(e) => setReferencePoint(e.target.value)} className="input" />
             <textarea placeholder="Observação (ex: horário de entrega, troco...)" value={observation} onChange={(e) => setObservation(e.target.value)} rows={3} className="input resize-none" />
           </div>
@@ -233,6 +303,28 @@ export default function CheckoutPage() {
         <section className="mt-6">
           <PaymentMethodSelector onSelect={setPaymentMethod} />
         </section>
+
+        {mostrarComoVaiPagar && (
+          <section className="mt-4">
+            <h2 className="font-display text-base font-bold text-ink">Como vai pagar?</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {deliveryPaymentOptions.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setDeliveryPaymentOption(opt.id)}
+                  className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                    deliveryPaymentOption === opt.id
+                      ? "border-brand bg-brand-light/30 text-ink"
+                      : "border-ink/10 text-ink-soft hover:border-ink/20"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mt-6 rounded-xl2 border border-ink/8 bg-white p-4">
           <h2 className="font-display text-base font-bold text-ink">Resumo</h2>
