@@ -43,18 +43,34 @@ export default function CheckoutPage() {
   const [couponError, setCouponError] = useState("");
   const [checkingCoupon, setCheckingCoupon] = useState(false);
 
-  // "Como vai pagar?" — só aparece quando o método é "Pagar na Entrega" (cod)
   const [deliveryPaymentEnabled, setDeliveryPaymentEnabled] = useState(false);
   const [deliveryPaymentOptions, setDeliveryPaymentOptions] = useState([]);
   const [deliveryPaymentOption, setDeliveryPaymentOption] = useState("");
 
+  const [shipping, setShipping] = useState({ cost: null, message: "Digite seu CEP para calcular o frete." });
+  const [calculatingShipping, setCalculatingShipping] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const shipping = calculateShipping(subtotal);
   const shippingCost = shipping.cost ?? 0;
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
   const total = Math.max(subtotal + shippingCost - discountAmount, 0);
+
+  useEffect(() => {
+    const cleanCep = zipCode.replace(/\D/g, "");
+    if (cleanCep.length !== 8) {
+      setShipping({ cost: null, message: "Digite seu CEP para calcular o frete." });
+      return;
+    }
+    setCalculatingShipping(true);
+    const timer = setTimeout(async () => {
+      const result = await calculateShipping(cleanCep, subtotal);
+      setShipping(result);
+      setCalculatingShipping(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [zipCode, subtotal]);
 
   useEffect(() => {
     async function loadDeliveryPaymentSettings() {
@@ -103,6 +119,10 @@ export default function CheckoutPage() {
       setFormError("Preencha ao menos nome completo, telefone e todos os campos de endereço (exceto complemento).");
       return;
     }
+    if (shipping.cost === null) {
+      setFormError("Não foi possível calcular o frete para esse CEP ainda. Confira o CEP digitado.");
+      return;
+    }
     if (mostrarComoVaiPagar && !deliveryPaymentOption) {
       setFormError("Escolha como você vai pagar o entregador.");
       return;
@@ -122,7 +142,7 @@ export default function CheckoutPage() {
         neighborhood: neighborhood.trim(),
         city: city.trim(),
         state: state,
-        zip_code: zipCode.trim(),
+        zip_code: zipCode.replace(/\D/g, ""),
         reference_point: referencePoint.trim() || null,
         stage: "cliente",
       };
@@ -252,7 +272,7 @@ export default function CheckoutPage() {
                 <option value="">UF *</option>
                 {UFS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
               </select>
-              <input required placeholder="CEP *" value={zipCode} onChange={(e) => setZipCode(e.target.value)} className="input flex-1" />
+              <input required placeholder="CEP *" value={zipCode} onChange={(e) => setZipCode(e.target.value)} className="input flex-1" maxLength={9} />
             </div>
             <input placeholder="Ponto de referência" value={referencePoint} onChange={(e) => setReferencePoint(e.target.value)} className="input" />
             <textarea placeholder="Observação (ex: horário de entrega, troco...)" value={observation} onChange={(e) => setObservation(e.target.value)} rows={3} className="input resize-none" />
@@ -294,10 +314,16 @@ export default function CheckoutPage() {
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-ink">Frete</span>
             <span className="text-sm font-bold text-ink">
-              {shipping.cost === 0 ? "Grátis" : shipping.cost === null ? "A calcular" : `R$ ${shippingCost.toFixed(2).replace(".", ",")}`}
+              {calculatingShipping
+                ? "Calculando…"
+                : shipping.cost === 0
+                ? "Grátis"
+                : shipping.cost === null
+                ? "—"
+                : `R$ ${shippingCost.toFixed(2).replace(".", ",")}`}
             </span>
           </div>
-          <p className="mt-1 text-xs text-ink-soft">{shipping.message}</p>
+          <p className="mt-1 text-xs text-ink-soft">{calculatingShipping ? "Consultando sua região…" : shipping.message}</p>
         </section>
 
         <section className="mt-6">
@@ -350,7 +376,7 @@ export default function CheckoutPage() {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || calculatingShipping}
           className="mt-6 w-full rounded-2xl bg-brand py-4 font-display text-base font-bold text-white transition-transform active:scale-[0.98] disabled:opacity-60"
         >
           {submitting ? "Processando…" : "Confirmar Pedido"}
