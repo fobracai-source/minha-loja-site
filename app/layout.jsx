@@ -15,19 +15,17 @@ export default function RootLayout({ children }) {
       <body className="font-body">
         <AuthProvider>
           <CartProvider>
-            <div className="pb-16 md:pb-0">
-              {children}
-              <footer
-                style={{
-                  textAlign: "center",
-                  fontSize: 11,
-                  color: "#a3a3a3",
-                  padding: "18px 16px 24px",
-                }}
-              >
-                Site desenvolvido por Fabrício da Silva Franca, para fins educativos
-              </footer>
-            </div>
+            <div className="pb-16 md:pb-0">{children}</div>
+            <footer
+              style={{
+                textAlign: "center",
+                fontSize: 11,
+                color: "#a3a3a3",
+                padding: "18px 16px 24px",
+              }}
+            >
+              Desenvolvido por Fabrício da Silva França, para fins didáticos
+            </footer>
             <BottomNav />
           </CartProvider>
         </AuthProvider>
