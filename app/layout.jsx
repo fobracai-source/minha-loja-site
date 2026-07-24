@@ -24,6 +24,8 @@ export default function RootLayout({ children }) {
                 padding: "18px 16px 24px",
               }}
             >
+              <a href="/politica-privacidade" style={{ textDecoration: "underline" }}>Política de Privacidade</a>
+              <br />
               Desenvolvido por Fabrício da Silva França, para fins didáticos
             </footer>
             <BottomNav />
