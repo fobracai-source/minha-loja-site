@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 
   const [deliveryPaymentEnabled, setDeliveryPaymentEnabled] = useState(false);
   const [deliveryPaymentOptions, setDeliveryPaymentOptions] = useState([]);
-  const [deliveryPaymentOption, setDeliveryPaymentOption] = useState("");
+  const [selectedDeliveryPayments, setSelectedDeliveryPayments] = useState([]);
 
   const [shipping, setShipping] = useState({ cost: null, message: "Digite seu CEP para calcular o frete." });
   const [calculatingShipping, setCalculatingShipping] = useState(false);
@@ -86,6 +86,10 @@ export default function CheckoutPage() {
 
   const mostrarComoVaiPagar = paymentMethod === "cod" && deliveryPaymentEnabled && deliveryPaymentOptions.length > 0;
 
+  function toggleDeliveryPayment(id) {
+    setSelectedDeliveryPayments((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
   async function handleApplyCoupon() {
     if (!couponInput.trim()) return;
     setCouponError("");
@@ -123,8 +127,8 @@ export default function CheckoutPage() {
       setFormError("Não foi possível calcular o frete para esse CEP ainda. Confira o CEP digitado.");
       return;
     }
-    if (mostrarComoVaiPagar && !deliveryPaymentOption) {
-      setFormError("Escolha como você vai pagar o entregador.");
+    if (mostrarComoVaiPagar && selectedDeliveryPayments.length === 0) {
+      setFormError("Escolha ao menos uma forma de pagamento pro entregador.");
       return;
     }
     setFormError("");
@@ -177,7 +181,7 @@ export default function CheckoutPage() {
           customer_id: customerId,
           status: "pendente",
           payment_method: paymentMethod,
-          delivery_payment_option: mostrarComoVaiPagar ? deliveryPaymentOption : null,
+          delivery_payment_options: mostrarComoVaiPagar ? selectedDeliveryPayments : null,
           shipping_cost: shippingCost,
           subtotal,
           total,
@@ -333,21 +337,25 @@ export default function CheckoutPage() {
         {mostrarComoVaiPagar && (
           <section className="mt-4">
             <h2 className="font-display text-base font-bold text-ink">Como vai pagar?</h2>
+            <p className="mt-1 text-xs text-ink-soft">Pode marcar mais de uma opção, se for dividir o pagamento.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {deliveryPaymentOptions.map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setDeliveryPaymentOption(opt.id)}
-                  className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
-                    deliveryPaymentOption === opt.id
-                      ? "border-brand bg-brand-light/30 text-ink"
-                      : "border-ink/10 text-ink-soft hover:border-ink/20"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+              {deliveryPaymentOptions.map((opt) => {
+                const selected = selectedDeliveryPayments.includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => toggleDeliveryPayment(opt.id)}
+                    className={`flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                      selected
+                        ? "border-brand bg-brand-light/30 text-ink"
+                        : "border-ink/10 text-ink-soft hover:border-ink/20"
+                    }`}
+                  >
+                    {selected && "✓"} {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </section>
         )}
