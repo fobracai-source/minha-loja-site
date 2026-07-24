@@ -55,12 +55,41 @@ export default function ContaPage() {
     async function loadOrders() {
       if (!customer?.id) return;
       setLoadingOrders(true);
-      const { data } = await supabase
+
+      const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
-        .select("*, order_items(product_name, unit_price, quantity, product_id, products(image_url)), deliveries(status, carrier, tracking_code, estimated_date)")
+        .select("*, order_items(product_name, unit_price, quantity, product_id), deliveries(status, carrier, tracking_code, estimated_date)")
         .eq("customer_id", customer.id)
         .order("created_at", { ascending: false });
-      setOrders(data || []);
+
+      if (ordersError) {
+        console.error("Erro ao buscar pedidos:", ordersError);
+        setOrders([]);
+        setLoadingOrders(false);
+        return;
+      }
+
+      // Busca as fotos dos produtos separadamente (mais simples e confiável
+      // que tentar embutir isso na busca de cima)
+      const productIds = [...new Set(
+        (ordersData || []).flatMap((o) => (o.order_items || []).map((i) => i.product_id).filter(Boolean))
+      )];
+
+      let imageMap = {};
+      if (productIds.length > 0) {
+        const { data: productsData } = await supabase.from("products").select("id, image_url").in("id", productIds);
+        (productsData || []).forEach((p) => { imageMap[p.id] = p.image_url; });
+      }
+
+      const merged = (ordersData || []).map((o) => ({
+        ...o,
+        order_items: (o.order_items || []).map((item) => ({
+          ...item,
+          image_url: imageMap[item.product_id] || null,
+        })),
+      }));
+
+      setOrders(merged);
       setLoadingOrders(false);
     }
     loadOrders();
@@ -168,9 +197,9 @@ export default function ContaPage() {
                   <div className="mt-3 flex flex-col gap-2 border-t border-ink/8 pt-3">
                     {(o.order_items || []).map((item, i) => (
                       <div key={i} className="flex items-center gap-3">
-                        {item.products?.image_url ? (
+                        {item.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={item.products.image_url} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                          <img src={item.image_url} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
                         ) : (
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-brand-light/40 text-lg">📦</div>
                         )}
