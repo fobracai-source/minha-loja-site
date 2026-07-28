@@ -1,38 +1,45 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --font-display: "Baloo 2", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
+.walking-dog {
+  position: fixed;
+  bottom: 68px;
+  left: -110px;
+  width: 100px;
+  height: 60px;
+  z-index: 20;
+  pointer-events: none;
+  animation: walk-across 16s linear infinite;
+}
+@keyframes walk-across {
+  0% { left: -110px; }
+  45% { left: 100vw; }
+  45.01% { left: -110px; opacity: 0; }
+  48% { opacity: 0; }
+  48.01% { opacity: 1; }
+  100% { left: -110px; opacity: 1; }
 }
 
-body {
-  background: #fffbf6;
-  color: #16243d;
+.leg {
+  transform-origin: top center;
+  animation: step 0.4s ease-in-out infinite;
+}
+.leg-back-1, .leg-front-1 {
+  animation-delay: 0s;
+}
+.leg-back-2, .leg-front-2 {
+  animation-delay: 0.2s;
+}
+@keyframes step {
+  0%, 100% { transform: rotate(-12deg); }
+  50% { transform: rotate(12deg); }
+}
+.dog-tail {
+  transform-origin: 8px 24px;
+  animation: wag 0.35s ease-in-out infinite;
+}
+@keyframes wag {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(10deg); }
 }
 
-/* Marcador de assinatura: patinha sutil usada como bullet/decoração pontual */
-.paw-bullet::before {
-  content: "🐾";
-  font-size: 0.7em;
-  margin-right: 4px;
-  opacity: 0.6;
-}
-
-::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
-}
-::-webkit-scrollbar-thumb {
-  background: #ffd9b8;
-  border-radius: 999px;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+@media (min-width: 768px) {
+  .walking-dog { display: none; }
 }
