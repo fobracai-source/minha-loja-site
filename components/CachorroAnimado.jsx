@@ -6,8 +6,8 @@ export default function CachorroAnimado() {
       <Image
         src="https://mqpqmkpqesqnbchucvfs.supabase.co/storage/v1/object/public/Imagens/cachorro-web.webp"
         alt="Cachorro mascote Cão&Cão"
-        width={200}
-        height={200}
+        width={400}
+        height={400}
         priority
         className="cachorro-animado"
       />
