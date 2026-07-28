@@ -40,20 +40,20 @@ body {
 .walking-dog {
   position: fixed;
   bottom: 68px;
-  left: -110px;
-  width: 100px;
-  height: 60px;
+  left: -160px;
+  width: 150px;
+  height: 85px;
   z-index: 20;
   pointer-events: none;
   animation: walk-across 16s linear infinite;
 }
 @keyframes walk-across {
-  0% { left: -110px; }
+  0% { left: -160px; }
   45% { left: 100vw; }
-  45.01% { left: -110px; opacity: 0; }
+  45.01% { left: -160px; opacity: 0; }
   48% { opacity: 0; }
   48.01% { opacity: 1; }
-  100% { left: -110px; opacity: 1; }
+  100% { left: -160px; opacity: 1; }
 }
 .leg {
   transform-origin: top center;
@@ -66,11 +66,11 @@ body {
   animation-delay: 0.2s;
 }
 @keyframes step {
-  0%, 100% { transform: rotate(-16deg); }
-  50% { transform: rotate(16deg); }
+  0%, 100% { transform: rotate(-14deg); }
+  50% { transform: rotate(14deg); }
 }
 .dog-tail {
-  transform-origin: 8px 20px;
+  transform-origin: 12px 30px;
   animation: wag 0.35s ease-in-out infinite;
 }
 @keyframes wag {
