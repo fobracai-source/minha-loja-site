@@ -1,22 +1,18 @@
 "use client";
-
 import Link from "next/link";
 import { Search, ShoppingBag, User } from "lucide-react";
 import { useCart } from "../context/CartContext";
-
 export default function Header({ search, onSearchChange }) {
   const { itemCount } = useCart();
-
   return (
     <header className="sticky top-0 z-30 bg-ink">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-        <Link href="/" className="flex items-center gap-1.5 shrink-0">
-          <span className="text-2xl">🐾</span>
-          <span className="font-display text-xl font-extrabold text-white">
-            Minha<span className="text-brand">Loja</span>
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3.5 md:py-4">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <span className="text-3xl md:text-4xl">🐾</span>
+          <span className="font-display text-3xl font-extrabold leading-none text-white md:text-4xl">
+            Cão<span className="text-brand">&</span>Cão
           </span>
         </Link>
-
         {onSearchChange && (
           <div className="hidden flex-1 md:flex">
             <div className="flex w-full items-center gap-2 rounded-full bg-white/10 px-4 py-2.5 focus-within:bg-white/15">
@@ -30,7 +26,6 @@ export default function Header({ search, onSearchChange }) {
             </div>
           </div>
         )}
-
         <div className="ml-auto hidden items-center gap-5 md:flex">
           <Link href="/conta" className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white">
             <User size={19} /> Conta
@@ -46,7 +41,6 @@ export default function Header({ search, onSearchChange }) {
           </Link>
         </div>
       </div>
-
       {onSearchChange && (
         <div className="px-4 pb-3 md:hidden">
           <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2.5">

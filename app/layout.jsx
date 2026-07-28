@@ -6,7 +6,7 @@ import BottomNav from "../components/BottomNav";
 const baloo = Baloo_2({ subsets: ["latin"], variable: "--font-display", weight: ["600", "700", "800"] });
 const inter = Inter({ subsets: ["latin"], variable: "--font-body", weight: ["400", "500", "600", "700"] });
 export const metadata = {
-  title: "Minha Loja · Tudo para o seu pet",
+  title: "Cão&Cão · Tudo para o seu pet",
   description: "Ração, brinquedos e acessórios para o seu melhor amigo, com entrega rápida.",
 };
 export default function RootLayout({ children }) {
