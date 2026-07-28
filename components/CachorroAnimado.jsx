@@ -4,7 +4,7 @@ export default function CachorroAnimado() {
   return (
     <div className="cachorro-wrapper">
       <Image
-        src="https://xxxxxxxxxxxx.supabase.co/storage/v1/object/public/imagens/cachorro-web.webp"
+        src="https://mqpqmkpqesqnbchucvfs.supabase.co/storage/v1/object/public/Imagens/cachorro-web.webp"
         alt="Cachorro mascote Cão&Cão"
         width={200}
         height={200}
