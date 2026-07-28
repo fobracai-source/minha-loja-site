@@ -31,28 +31,36 @@ export default function RootLayout({ children }) {
             <BottomNav />
 
             <svg className="walking-dog" viewBox="0 0 100 60" aria-hidden="true">
-              {/* Rabo */}
-              <path className="dog-tail" d="M8 24 Q -4 14 0 6" stroke="#8B4A24" strokeWidth="5" fill="none" strokeLinecap="round" />
-              {/* Corpo */}
-              <ellipse cx="42" cy="32" rx="28" ry="15" fill="#C4763A" />
-              <ellipse cx="42" cy="38" rx="24" ry="7" fill="#E8A968" />
+              {/* Rabo, balançando */}
+              <path className="dog-tail" d="M10 22 Q -6 8 4 2" stroke="#B8763E" strokeWidth="6" fill="none" strokeLinecap="round" />
+
               {/* Patas traseiras */}
-              <rect className="leg leg-back-1" x="18" y="38" width="7" height="16" rx="3.5" fill="#8B4A24" />
-              <rect className="leg leg-back-2" x="30" y="38" width="7" height="16" rx="3.5" fill="#8B4A24" />
+              <rect className="leg leg-back-1" x="20" y="38" width="8" height="15" rx="4" fill="#8A5223" />
+              <rect className="leg leg-back-2" x="32" y="38" width="8" height="15" rx="4" fill="#8A5223" />
+
+              {/* Corpo */}
+              <ellipse cx="50" cy="34" rx="30" ry="16" fill="#D98C4A" />
+              <ellipse cx="50" cy="42" rx="26" ry="8" fill="#F3C58A" />
+
               {/* Patas dianteiras */}
-              <rect className="leg leg-front-1" x="54" y="38" width="7" height="16" rx="3.5" fill="#8B4A24" />
-              <rect className="leg leg-front-2" x="65" y="38" width="7" height="16" rx="3.5" fill="#8B4A24" />
-              {/* Cabeça */}
-              <circle cx="76" cy="20" r="14" fill="#C4763A" />
-              <ellipse cx="87" cy="24" rx="7" ry="5" fill="#E8A968" />
-              {/* Orelha */}
-              <path d="M70 10 Q 62 8 63 20 Q 68 18 72 14 Z" fill="#8B4A24" />
+              <rect className="leg leg-front-1" x="58" y="38" width="8" height="15" rx="4" fill="#8A5223" />
+              <rect className="leg leg-front-2" x="70" y="38" width="8" height="15" rx="4" fill="#8A5223" />
+
+              {/* Cabeça (bem maior, estilo fofo) */}
+              <circle cx="80" cy="20" r="17" fill="#D98C4A" />
+              <ellipse cx="93" cy="24" rx="8" ry="6" fill="#F3C58A" />
+
+              {/* Orelha caída */}
+              <path d="M70 8 Q 58 10 62 26 Q 70 22 74 12 Z" fill="#8A5223" />
+
               {/* Focinho e olho */}
-              <circle cx="92" cy="25" r="2" fill="#3B2416" />
-              <circle cx="80" cy="14" r="2.2" fill="#3B2416" />
-              {/* Coleira laranja (combina com a marca) */}
-              <rect x="68" y="27" width="16" height="4" rx="2" fill="#FF6B1A" />
-              <circle cx="76" cy="32" r="2" fill="#FFD9B8" />
+              <ellipse cx="98" cy="26" rx="3" ry="2.4" fill="#3B2416" />
+              <circle cx="83" cy="14" r="2.6" fill="#3B2416" />
+              <circle cx="84" cy="13" r="0.9" fill="#fff" />
+
+              {/* Coleira, combinando com a marca */}
+              <rect x="72" y="30" width="18" height="4.5" rx="2.2" fill="#FF6B1A" />
+              <circle cx="81" cy="36" r="2.2" fill="#FFD9B8" />
             </svg>
           </CartProvider>
         </AuthProvider>
