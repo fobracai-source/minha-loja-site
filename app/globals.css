@@ -80,3 +80,43 @@ body {
 @media (min-width: 768px) {
   .walking-dog { display: none; }
 }
+.cachorro-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cachorro-animado {
+  animation: cachorro-vivo 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes cachorro-vivo {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  15% {
+    transform: translateY(-8px) rotate(-4deg) scale(1.02);
+  }
+  30% {
+    transform: translateY(0) rotate(3deg) scale(1);
+  }
+  45% {
+    transform: translateY(-6px) rotate(-3deg) scale(1.01);
+  }
+  60% {
+    transform: translateY(0) rotate(4deg) scale(1);
+  }
+  75% {
+    transform: translateY(-4px) rotate(-2deg) scale(1.01);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cachorro-animado {
+    animation: none;
+  }
+}
