@@ -29,8 +29,37 @@ export default function RootLayout({ children }) {
               Desenvolvido por Fabrício da Silva França, para fins didáticos
             </footer>
             <BottomNav />
+            <span className="walking-dog" aria-hidden="true">🐕</span>
           </CartProvider>
         </AuthProvider>
+
+        <style jsx global>{`
+          .walking-dog {
+            position: fixed;
+            bottom: 72px;
+            left: -48px;
+            font-size: 30px;
+            line-height: 1;
+            z-index: 20;
+            pointer-events: none;
+            animation: walk-across 16s linear infinite, bob 0.5s ease-in-out infinite;
+          }
+          @keyframes walk-across {
+            0% { left: -48px; }
+            45% { left: calc(100vw + 48px); }
+            45.01% { left: -48px; opacity: 0; }
+            48% { opacity: 0; }
+            48.01% { opacity: 1; }
+            100% { left: -48px; opacity: 1; }
+          }
+          @keyframes bob {
+            0%, 100% { transform: translateY(0) scaleX(-1); }
+            50% { transform: translateY(-4px) scaleX(-1); }
+          }
+          @media (min-width: 768px) {
+            .walking-dog { display: none; }
+          }
+        `}</style>
       </body>
     </html>
   );
